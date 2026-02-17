@@ -148,6 +148,7 @@ import { Turnstile } from '@sctg/turnstile-vue3';
 
 const token = ref<string>('');
 const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY as string;
+const turnstileRef = ref<any>(null)
 
 
 const formData = reactive({
@@ -271,6 +272,12 @@ const resetForm = () => {
   formData.message = '';
   
   Object.keys(errors).forEach(key => errors[key] = false);
+   token.value = ""
+
+  // 🔥 Reset Turnstile widget
+  if (turnstileRef.value) {
+    turnstileRef.value.reset()
+  }
   showSuccess.value = false;
 };
 
