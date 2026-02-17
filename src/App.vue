@@ -147,8 +147,7 @@ import { Turnstile } from '@sctg/turnstile-vue3';
 
 
 const token = ref<string>('');
-const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY;
-
+const siteKey = '0x4AAAAAACeij_Rbg6tsjrTT';
 
 const formData = reactive({
   company: "6",
@@ -214,17 +213,10 @@ const handleSubmit = async () => {
   if (!validateForm()) {
     return;
   }
-
-   if (!token.value) {
-    alert('Please complete the Turnstile verification.');
-    return;
-  }
   
   isSubmitting.value = true;
 
   const form = new FormData();
-  console.log(formData);
-  
   Object.entries(formData).forEach((v: any) => {
     form.append(v[0], v[1]);
   });
@@ -290,7 +282,6 @@ const handleSuccess = () => {
         .then((data) => console.log(data))
         .catch((error) => console.error(error));
 };
-
 </script>
 
 <style scoped>
