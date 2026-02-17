@@ -100,7 +100,7 @@
 import { ref, reactive } from 'vue';
 import { Turnstile } from '@sctg/turnstile-vue3';
 
-const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY;
+const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY as string;
 const token = ref<string>('');
 
 const formData = reactive({
