@@ -115,7 +115,7 @@
             Send
           </button>
           <button 
-            type="button" :disabled="isSubmitting || !tokenVerified"
+            type="button" 
             @click="resetForm"
             class="bg-red-500/10 hover:bg-red-500/15 active:bg-red-500/10 text-red-500 font-medium py-2 px-6 rounded-xl cursor-pointer  transition duration-200 flex items-center gap-2"
           >
@@ -149,7 +149,6 @@ import { Turnstile } from '@sctg/turnstile-vue3';
 
 const token = ref<string>('');
 const siteKey = '0x4AAAAAACeij_Rbg6tsjrTT';
-const tokenVerified = ref(false)  
 
 const formData = reactive({
   company: "6",
@@ -212,38 +211,49 @@ const validateForm = () => {
 
 
 const handleSubmit = async () => {
-  if (!validateForm()) return
-
-  // check Turnstile verified
-  if (!tokenVerified.value) {
-    alert('Please complete captcha verification first.')
-    return
+  if (!validateForm()) {
+    return;
   }
+  
+  isSubmitting.value = true;
 
-  isSubmitting.value = true
-
-  const form = new FormData()
-  Object.entries(formData).forEach((v: any) => form.append(v[0], v[1]))
-
+  const form = new FormData();
+  Object.entries(formData).forEach((v: any) => {
+    form.append(v[0], v[1]);
+  });
+  
   try {
-    const apiUrl = import.meta.env.VITE_API_URL + 'sale/contact'
-    await axios.post(apiUrl, form, { headers: { 'Content-Type': 'application/json' } })
+    console.log(formData, 'Submit')
+    const apiUrl = import.meta.env.VITE_API_URL + 'sale/contact';
+    await axios.post(apiUrl, form, {
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    
+    showSuccess.value = true;
 
-    showSuccess.value = true
+
+    //reset form 
+    // formData.title = 'Mr.';
+    // formData.fullName = '';
+    // formData.email = '';
+    // formData.phone = '';
+    // formData.subject = '';
+    // formData.message = '';
+
     setTimeout(() => {
-      showSuccess.value = false
-      resetForm()
-      tokenVerified.value = false
-      token.value = ''
-    }, 3000)
-  } catch (err) {
-    console.error(err)
-    alert('Form submission failed.')
+      showSuccess.value = false;
+      resetForm();
+    }, 3000);
+    
+  } catch (error) {
+    console.error('Error submitting form:', error);
   } finally {
-    isSubmitting.value = false
+    isSubmitting.value = false;
   }
-}
-
+};
 
 const resetForm = () => {
   formData.title = 'Mr.';
@@ -260,31 +270,20 @@ const resetForm = () => {
 
 
 
-const handleSuccess = async (value: string) => {
-  console.log('Turnstile token:', value)
-  token.value = value
-  try {
-    const res = await fetch('/api/verify-captcha', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: token.value }),
+const handleSuccess = (value: string) => {
+    console.log('Turnstile token:', token.value);
+    token.value = value
+    fetch('/api/verify-captcha', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token: token.value }),
     })
-
-    const data = await res.json()
-    if (data.success) {
-      tokenVerified.value = true
-      console.log('Captcha verified ✅', data)
-    } else {
-      tokenVerified.value = false
-      alert('Captcha verification failed. Try again.')
-    }
-  } catch (err) {
-    tokenVerified.value = false
-    console.error(err)
-    alert('Captcha verification error. Try again.')
-  }
-}
-
+        .then((response) => response.json())
+        .then((data) => console.log(data))
+        .catch((error) => console.error(error));
+};
 </script>
 
 <style scoped>
