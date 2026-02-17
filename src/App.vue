@@ -138,7 +138,7 @@ import { Turnstile } from "@sctg/turnstile-vue3"
 const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY as string
 
 const token = ref("")
-const turnstileRef = ref<any>(null)
+// const turnstileRef = ref<any>(null)
 const turnstileKey = ref(0) // 🔥 force re-render
 
 const formData = reactive({
