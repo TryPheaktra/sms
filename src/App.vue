@@ -97,11 +97,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
-import { Turnstile } from '@sctg/turnstile-vue3';
+import { ref, reactive } from 'vue'
+import { Turnstile } from '@sctg/turnstile-vue3'
 
-const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY as string;
-const token = ref<string>('');
+const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY as string
+
+const token = ref<string>('')
+const turnstileRef = ref<any>(null)
 
 const formData = reactive({
   title: "Mr.",
@@ -110,65 +112,72 @@ const formData = reactive({
   phone: "",
   subject: "",
   message: ""
-});
+})
 
 const errors = reactive<Record<string, boolean>>({
   fullName: false,
   email: false,
   subject: false,
   message: false
-});
+})
 
-const isSubmitting = ref(false);
-const showSuccess = ref(false);
+const isSubmitting = ref(false)
+const showSuccess = ref(false)
 
 const validateForm = () => {
-  let isValid = true;
-  Object.keys(errors).forEach(k => errors[k] = false);
+  let isValid = true
+  Object.keys(errors).forEach(k => errors[k] = false)
 
-  if (!formData.fullName.trim()) { errors.fullName = true; isValid = false; }
-  if (!formData.email.trim()) { errors.email = true; isValid = false; }
-  if (!formData.subject.trim()) { errors.subject = true; isValid = false; }
-  if (!formData.message.trim()) { errors.message = true; isValid = false; }
+  if (!formData.fullName.trim()) { errors.fullName = true; isValid = false }
+  if (!formData.email.trim()) { errors.email = true; isValid = false }
+  if (!formData.subject.trim()) { errors.subject = true; isValid = false }
+  if (!formData.message.trim()) { errors.message = true; isValid = false }
 
-  return isValid;
-};
+  return isValid
+}
 
 const handleComplete = () => {
-  console.log('Turnstile token (frontend-only):', token.value);
-};
+  console.log('Turnstile token:', token.value)
+}
 
 const handleSubmit = () => {
-  if (!validateForm()) return;
+  if (!validateForm()) return
 
   if (!token.value) {
-    alert('Please complete Turnstile verification!');
-    return;
+    alert('Please complete Turnstile verification!')
+    return
   }
 
-  isSubmitting.value = true;
+  isSubmitting.value = true
 
-  // Frontend-only submission: log data
-  console.log('Form data + token (frontend-only):', { ...formData, token: token.value });
+  console.log('Submit data:', { ...formData, token: token.value })
 
-  showSuccess.value = true;
+  showSuccess.value = true
 
   setTimeout(() => {
-    showSuccess.value = false;
-    resetForm();
-    isSubmitting.value = false;
-  }, 3000);
-};
+    showSuccess.value = false
+    resetForm()
+    isSubmitting.value = false
+  }, 3000)
+}
 
 const resetForm = () => {
-  formData.title = 'Mr.';
-  formData.fullName = '';
-  formData.email = '';
-  formData.phone = '';
-  formData.subject = '';
-  formData.message = '';
-  Object.keys(errors).forEach(k => errors[k] = false);
-};
+  formData.title = "Mr."
+  formData.fullName = ""
+  formData.email = ""
+  formData.phone = ""
+  formData.subject = ""
+  formData.message = ""
+
+  Object.keys(errors).forEach(k => errors[k] = false)
+
+  token.value = ""
+
+  // 🔥 Important: Reset Turnstile widget
+  if (turnstileRef.value) {
+    turnstileRef.value.reset()
+  }
+}
 </script>
 
 <style scoped>
