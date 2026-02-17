@@ -1,61 +1,24 @@
-import { verifyCaptcha } from '@sctg/turnstile-vue3';
-import { PagesFunction} from '@cloudflare/workers-types';
+export const onRequestPost = async ({ request, env }: any) => {
+  try {
+    const { token } = await request.json();
 
-interface Env {
-  CLOUDFLARE_TURNSTILE_SECRET_KEY: string;
-}
-export const onRequestPost: PagesFunction<Env> = async ({ request, env }) =>{
-  const body:{token: string} = await request.json();
+    if (!token) return new Response(JSON.stringify({ success: false, error: 'No token provided' }), { status: 400 });
 
-  const token  = body.token;
-  const turnstileSecret = '0x4AAAAAACeijzVQV037UUI2OKyGUT8yQs0';
-  const cloudflareIp = request.headers.get('CF-Connecting-IP') || "" ;
+    const params = new URLSearchParams();
+    params.append('secret', env.TURNSTILE_SECRET);
+    params.append('response', token);
 
-  const data = await verifyCaptcha(turnstileSecret, token, cloudflareIp)
-  if (data.success) {
-    return new (Response as any)(
-      JSON.stringify({ message: 'Captcha verified successfully' }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      },
-    );
-  } else {
-    return new (Response)(JSON.stringify({ message: 'Invalid captcha' }), {
-      status: 400,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: params
     });
+
+    const data = await res.json();
+
+    return new Response(JSON.stringify(data), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500 });
   }
-}
-
-export const onRequestGet: PagesFunction<Env> = async ({ request, env })=>{
-  return new (Response as any)(
-    JSON.stringify({ message: 'GET request not allowed' }),
-    {
-      status: 405,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    },
-  );
-}
-
-export async function onRequestOptions() {
-  return new Response(
-    JSON.stringify({ message: 'OPTIONS request not allowed' }),
-    {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Max-Age': '86400',
-      },
-    },
-  );
-}
+};
