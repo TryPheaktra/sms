@@ -92,6 +92,7 @@
           </div>
           <div class="w-full flex turnstile-wrapper rounded-2xl overflow-hidden justify-center mt-4">
             <Turnstile
+              ref="turnstileRef"
               :site-key="siteKey"
               v-model="token"
               theme="light"  
