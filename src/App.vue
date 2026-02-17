@@ -96,6 +96,7 @@
               v-model="token"
               theme="light"  
               @complete="handleSuccess"
+              :auto="false"
             />
           </div>
         </div>
@@ -269,8 +270,9 @@ const resetForm = () => {
 
 
 
-const handleSuccess = () => {
+const handleSuccess = (value: string) => {
     console.log('Turnstile token:', token.value);
+    token.value = value
     fetch('/api/verify-captcha', {
         method: 'POST',
         headers: {
