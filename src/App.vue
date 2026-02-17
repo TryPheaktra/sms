@@ -113,7 +113,7 @@
 import { ref, reactive } from 'vue'
 import { Turnstile } from '@sctg/turnstile-vue3'
 
-const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY as string
+const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY;
 
 const token = ref<string>('')
 const turnstileRef = ref<any>(null)
