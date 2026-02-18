@@ -11,3 +11,7 @@ export async function onRequestPost({ request }) {
   if (data.success) return new Response(JSON.stringify({ message: "Verified ✅" }))
   else return new Response(JSON.stringify({ message: "Failed ❌" }), { status: 400 })
 }
+
+export async function onRequestGet(context) {
+  return new Response("Serverless function is working ✅")
+}
