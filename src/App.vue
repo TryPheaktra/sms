@@ -140,14 +140,17 @@
 </template>
 
 <script setup lang="ts">
-import axios from 'axios';
 import { ref, reactive } from 'vue';
 import { Turnstile } from '@sctg/turnstile-vue3';
+import { useToast } from 'primevue/usetoast';
 
+const toast = useToast();
 
+// Turnstile
 const token = ref<string>('');
-const siteKey = '0x4AAAAAACeij_Rbg6tsjrTT';
+const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY as string;
 
+// Form data
 const formData = reactive({
   company: "6",
   langId: 1,
@@ -160,9 +163,10 @@ const formData = reactive({
   subject: "",
   message: "",
   remark: "",
-  statusId:1 // 0 = Inactive, 1 = Active, 2 = Completed
+  statusId: 1
 });
 
+// Validation errors
 const errors = reactive<Record<string, boolean>>({
   fullName: false,
   email: false,
@@ -173,62 +177,45 @@ const errors = reactive<Record<string, boolean>>({
 const isSubmitting = ref(false);
 const showSuccess = ref(false);
 
-
-
-const validateForm = () => {
-  let isValid = true;
-  
-  // Reset errors
+// Reset form
+const resetForm = () => {
+  formData.title = 'Mr.';
+  formData.fullName = '';
+  formData.email = '';
+  formData.phone = '';
+  formData.subject = '';
+  formData.message = '';
   Object.keys(errors).forEach(key => errors[key] = false);
-  
-  // Validate required fields
-  if (!formData.fullName.trim()) {
-    errors.fullName = true;
-    isValid = false;
-  }
-  
-  if (!formData.email.trim()) {
-    errors.email = true;
-    isValid = false;
-  }
+  showSuccess.value = false;
+};
 
-  if (!formData.subject.trim()) {
-    errors.subject = true;
-    isValid = false;
-  }
-  
-  if (!formData.message.trim()) {
-    errors.message = true;
-    isValid = false;
-  }
-  
+// Form validation
+const validateForm = (): boolean => {
+  let isValid = true;
+  Object.keys(errors).forEach(key => errors[key] = false);
+
+  if (!formData.fullName.trim()) { errors.fullName = true; isValid = false; }
+  if (!formData.email.trim()) { errors.email = true; isValid = false; }
+  if (!formData.subject.trim()) { errors.subject = true; isValid = false; }
+  if (!formData.message.trim()) { errors.message = true; isValid = false; }
+
   return isValid;
 };
 
-
-
+// Submit handler
 const handleSubmit = async () => {
-  if (!validateForm()) {
-    return;
-  }
+  if (!validateForm()) return;
 
   if (!token.value) {
-    alert('Please complete the Turnstile verification.');
+    toast.add({ severity: 'warn', summary: 'Human verification', detail: 'Please complete Turnstile verification', life: 3000 });
     return;
   }
 
-  
   isSubmitting.value = true;
 
-  const form = new FormData();
-  Object.entries(formData).forEach((v: any) => {
-    form.append(v[0], v[1]);
-  });
-  
   try {
-
-    // 1️⃣ Verify Turnstile with Worker
-    const workerRes = await fetch('https://arc-contact.fiveword2.workers.dev', {
+    // 1️⃣ Verify Turnstile via Worker
+    const workerRes = await fetch(import.meta.env.VITE_WORKER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: token.value })
@@ -237,59 +224,46 @@ const handleSubmit = async () => {
     const workerData = await workerRes.json();
 
     if (!workerData.success) {
-      alert('Turnstile verification failed. Please try again.');
+      toast.add({ severity: 'error', summary: 'Verification failed', detail: 'Turnstile verification failed', life: 3000 });
       isSubmitting.value = false;
       return;
     }
 
-    console.log(formData, 'Submit')
-    const apiUrl = import.meta.env.VITE_API_URL + 'sale/contact';
-    await axios.post(apiUrl, form, {
-      headers: {
-        'Content-Type': 'application/json',
-      }
+    // 2️⃣ Send form data to API using FormData
+    const form = new FormData();
+    Object.entries(formData).forEach(([key, value]) => {
+      form.append(key, value != null ? String(value) : '');
     });
-    
-    
+
+    const apiUrl = import.meta.env.VITE_API_URL + 'sale/contact';
+    const apiRes = await fetch(apiUrl, {
+      method: 'POST',
+      body: form
+    });
+
+    if (!apiRes.ok) throw new Error('Failed to submit form');
+
+    // 3️⃣ Success feedback
     showSuccess.value = true;
+    toast.add({ severity: 'success', summary: 'Success', detail: 'Form submitted successfully!', life: 3000 });
+    resetForm();
 
+    setTimeout(() => showSuccess.value = false, 3000);
 
-    //reset form 
-    // formData.title = 'Mr.';
-    // formData.fullName = '';
-    // formData.email = '';
-    // formData.phone = '';
-    // formData.subject = '';
-    // formData.message = '';
-
-    setTimeout(() => {
-      showSuccess.value = false;
-      resetForm();
-    }, 3000);
-    
-  } catch (error) {
-    console.error('Error submitting form:', error);
+  } catch (error: any) {
+    console.error(error);
+    toast.add({ severity: 'error', summary: 'Error', detail: error.message || 'Submission failed', life: 5000 });
   } finally {
     isSubmitting.value = false;
   }
 };
 
-const resetForm = () => {
-  formData.title = 'Mr.';
-  formData.fullName = '';
-  formData.email = '';
-  formData.phone = '';
-  formData.subject = '';
-  formData.message = '';
-  
-  Object.keys(errors).forEach(key => errors[key] = false);
-  showSuccess.value = false;
+// Turnstile callback
+const handleSuccess = (value: string) => {
+  token.value = value;
 };
-
-
-
-
 </script>
+
 
 <style scoped>
 .fade-enter-active, .fade-leave-active {
