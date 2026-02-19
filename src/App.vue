@@ -289,10 +289,6 @@ const resetForm = () => {
 
 
 
-const handleSuccess = (value: string) => {
-    console.log('Turnstile token:', token.value);
-    token.value = value
-};
 </script>
 
 <style scoped>
