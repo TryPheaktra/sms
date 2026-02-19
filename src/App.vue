@@ -194,7 +194,6 @@ const validateForm = () => {
     isValid = false;
   }
 
-  
   if (!formData.subject.trim()) {
     errors.subject = true;
     isValid = false;
@@ -214,6 +213,12 @@ const handleSubmit = async () => {
   if (!validateForm()) {
     return;
   }
+
+  if (!token.value) {
+    alert('Please complete the Turnstile verification.');
+    return;
+  }
+
   
   isSubmitting.value = true;
 
@@ -223,6 +228,22 @@ const handleSubmit = async () => {
   });
   
   try {
+
+    // 1️⃣ Verify Turnstile with Worker
+    const workerRes = await fetch('https://arc-contact.fiveword2.workers.dev', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: token.value })
+    });
+
+    const workerData = await workerRes.json();
+
+    if (!workerData.success) {
+      alert('Turnstile verification failed. Please try again.');
+      isSubmitting.value = false;
+      return;
+    }
+
     console.log(formData, 'Submit')
     const apiUrl = import.meta.env.VITE_API_URL + 'sale/contact';
     await axios.post(apiUrl, form, {
