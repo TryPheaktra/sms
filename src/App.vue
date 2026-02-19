@@ -294,16 +294,6 @@ const resetForm = () => {
 const handleSuccess = (value: string) => {
     console.log('Turnstile token:', token.value);
     token.value = value
-    fetch('https://sms-46d.pages.dev/api/verify-captcha', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token: token.value }),
-    })
-        .then((response) => response.json())
-        .then((data) => console.log(data))
-        .catch((error) => console.error(error));
 };
 </script>
 

@@ -3,7 +3,7 @@ export interface Env {
 }
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*", // ដាក់ domain frontend របស់អ្នក
+  "Access-Control-Allow-Origin": "https://sms-46d.pages.dev", // ដាក់ domain frontend របស់អ្នក
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
 };
