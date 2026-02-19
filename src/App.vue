@@ -69,9 +69,6 @@
             Reset
           </button>
         </div>
-        <span v-if="!token && !isSubmitting" class="text-red-500 text-sm mt-1">
-          Please complete Turnstile verification
-        </span>
       </form>
     </div>
   </div>
