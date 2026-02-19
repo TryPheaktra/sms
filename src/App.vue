@@ -95,8 +95,6 @@
               :site-key="siteKey"
               v-model="token"
               theme="light"  
-              @complete="handleSuccess"
-              :auto="false"
             />
           </div>
         </div>
