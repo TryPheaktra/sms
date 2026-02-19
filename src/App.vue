@@ -258,10 +258,7 @@ const handleSubmit = async () => {
   }
 };
 
-// Turnstile callback
-const handleSuccess = (value: string) => {
-  token.value = value;
-};
+
 </script>
 
 
