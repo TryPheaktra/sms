@@ -48,11 +48,14 @@
           </div>
 
           <!-- Turnstile -->
+          <div class="w-full flex turnstile-wrapper rounded-2xl overflow-hidden justify-center mt-4">
+            <Turnstile :site-key="siteKey" v-model="token" theme="light"/>
+          </div>
         </div>
 
         <!-- Buttons -->
         <div class="flex justify-center gap-4 mt-6 border-t border-zinc-200 pt-6">
-          <button type="submit"   class="bg-[#174c83] hover:bg-[#123a62] text-white font-medium py-2 px-6 rounded-xl cursor-pointer shadow-sm transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+          <button type="submit" :disabled="isSubmitting || !token"  class="bg-[#174c83] hover:bg-[#123a62] text-white font-medium py-2 px-6 rounded-xl cursor-pointer shadow-sm transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
               <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
@@ -83,7 +86,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
-// import { Turnstile } from '@sctg/turnstile-vue3';
+import { Turnstile } from '@sctg/turnstile-vue3';
 import { useToast } from 'primevue/usetoast';
 
 const toast = useToast();
